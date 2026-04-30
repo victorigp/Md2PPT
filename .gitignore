@@ -1,6 +1,7 @@
 # Archivos y carpetas de Visual Studio
 .vs/
 *.user
+build/
 
 # Archivos compilados y caché de Python
 __pycache__/
@@ -14,3 +15,6 @@ env/
 
 # Variables de entorno locales
 .env
+
+# Bat de publicación
+_PUBLICAR BUILD.bat
