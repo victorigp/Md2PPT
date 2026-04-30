@@ -84,7 +84,7 @@ python Md2PPT.py <entrada.md> <plantilla.pptx> <salida.pptx>
 
 ## Formato del Markdown de entrada
 
-Se puede usar el fichero de "PROMPT GENERACION MD PRESENTACION.txt" en la raíz del proyecto para que una IA genere un md con la referencia de sintaxis correcta. Ver también `ejemplo_entrada.md` de docs\ejemplos.
+Se puede usar el fichero de "PROMPT GENERACION MD PRESENTACION.md" en la raíz del proyecto para que una IA genere un md con la referencia de sintaxis correcta. Ver también `ejemplo_entrada.md` de docs\ejemplos.
 
 ### Referencia de sintaxis
 
