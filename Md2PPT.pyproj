@@ -1,0 +1,57 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>08410c64-f981-4de1-80b0-fe93c6c60e62</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>Md2PPT</Name>
+    <RootNamespace>Md2PPT</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+    <Content Include="documentos\ejemplos\ejemplo_entrada.md" />
+    <Content Include="documentos\ejemplos\plantilla.pptx" />
+    <Content Include="documentos\ejemplos\Título de la presentación de ejemplo.pptx" />
+    <Content Include="documentos\FLOAN_Presentacion.md" />
+    <Content Include="documentos\plantilla.pptx" />
+    <Content Include="documentos\Servicio FLOAN.pptx" />
+    <Content Include="GetTitle.ps1" />
+    <Content Include="Md2PPT.bat" />
+    <Content Include="PROMPT GENERACION MD PRESENTACION.txt" />
+    <Content Include="README.md" />
+    <Content Include="requirements.txt" />
+    <Content Include="Settings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="LimpiarPlantilla.py" />
+    <Compile Include="Md2PPT.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".vs\" />
+    <Folder Include="documentos\" />
+    <Folder Include="documentos\ejemplos\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

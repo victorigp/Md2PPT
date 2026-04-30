@@ -1,0 +1,6 @@
+python-pptx
+Pillow
+# Dependencia opcional (instalar via npm, no pip):
+# npm install -g @mermaid-js/mermaid-cli
+
+

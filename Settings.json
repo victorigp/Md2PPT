@@ -1,0 +1,10 @@
+{
+  "General": {
+    "CompanyName": "Company"
+  },
+  "Python": {
+    "InterpreterPath": "E:\\Python\\Python38-32\\python.exe",
+    "SearchPaths": [],
+    "TestFramework": "unittest"
+  }
+}
