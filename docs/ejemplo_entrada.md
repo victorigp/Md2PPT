@@ -1,14 +1,6 @@
 # Título de la presentación de ejemplo
 
-Este es el primer bloque mermaid y aparecerá como imagen en la portada:
-
-```mermaid
-graph LR
-    A["Ejemplo 1"] -->|"Ejemplo 2"| B["Ejemplo 3"]
-    B -->|"Ejemplo 4"| C["Ejemplo 5"]
-    C -->|"Ejemplo 6"| B
-    B -->|"Ejemplo 7"| A
-```
+![Texto alternativo](img/image.png "Image")
 
 ## Primera sección
 ### Introducción a la sección

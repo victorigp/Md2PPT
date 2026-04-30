@@ -2,10 +2,7 @@
 """
 Md2PPT.py - Conversor de Markdown a PowerPoint usando una plantilla .pptx
 
-Uso automatico:
-    Ejecutar Md2PPT.bat (lee documentos/ automaticamente)
-
-Uso manual:
+Uso:
     python Md2PPT.py <archivo.md> <plantilla.pptx> <salida.pptx> [--debug]
 """
 
@@ -43,6 +40,9 @@ N_NUMERO  = "MD2PPT_SLIDE_NUMBER"
 N_FECHA   = "MD2PPT_DATE"
 
 NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+
+# Regex imagen Markdown: ![alt](ruta) o ![alt](ruta "titulo")
+RE_IMG = re.compile(r'^!\[.*?\]\((.+?)(?:\s+".*?")?\)\s*$')
 
 
 # ---------------------------------------------------------------------------
@@ -141,15 +141,19 @@ def parsear_inline(texto):
 
 
 def parsear_markdown(ruta_md):
-    """Lee el MD y devuelve (lista_elementos, primer_mermaid)."""
-    elementos = []
+    """Lee el MD y devuelve (lista_elementos, primer_imagen, primer_mermaid)."""
+    elementos      = []
     primer_mermaid = None
-    en_mermaid = False
+    primer_imagen  = None
+    en_mermaid     = False
     bloque_mermaid = []
+    md_dir = os.path.dirname(os.path.abspath(ruta_md))
 
     with open(ruta_md, "r", encoding="utf-8") as f:
         for linea in f:
             linea = linea.rstrip("\n")
+
+            # Bloque mermaid
             if re.match(r"^\s*```mermaid\s*$", linea):
                 en_mermaid = True
                 bloque_mermaid = []
@@ -165,8 +169,19 @@ def parsear_markdown(ruta_md):
             if en_mermaid:
                 bloque_mermaid.append(linea)
                 continue
+
             if not linea.strip():
                 continue
+
+            # Imagen Markdown: ![alt](ruta)
+            m = RE_IMG.match(linea)
+            if m:
+                ruta_img = os.path.join(md_dir, m.group(1).strip())
+                if primer_imagen is None:
+                    primer_imagen = ruta_img
+                elementos.append({"tipo": "imagen", "ruta": ruta_img})
+                continue
+
             m = re.match(r"^###\s+(.+)$", linea)
             if m:
                 elementos.append({"tipo": "h3", "texto": m.group(1).strip()})
@@ -185,20 +200,22 @@ def parsear_markdown(ruta_md):
                 continue
             elementos.append({"tipo": "text", "texto": linea.strip()})
 
-    return elementos, primer_mermaid
+    return elementos, primer_imagen, primer_mermaid
 
 
 def etiquetar_mermaid_secciones(elementos):
-    """Anota en cada h2 el codigo del primer mermaid de su seccion."""
+    """Anota en cada h2 la primera imagen y el primer mermaid de su seccion."""
     for i, el in enumerate(elementos):
         if el["tipo"] == "h2":
+            el["primer_imagen"]  = None
             el["primer_mermaid"] = None
             for j in range(i + 1, len(elementos)):
                 if elementos[j]["tipo"] in ("h1", "h2"):
                     break
-                if elementos[j]["tipo"] == "mermaid":
+                if elementos[j]["tipo"] == "imagen" and el["primer_imagen"] is None:
+                    el["primer_imagen"] = elementos[j]["ruta"]
+                if elementos[j]["tipo"] == "mermaid" and el["primer_mermaid"] is None:
                     el["primer_mermaid"] = elementos[j]["codigo"]
-                    break
     return elementos
 
 
@@ -302,7 +319,7 @@ def construir_mapa_idx_layout(layout):
 
 
 def crear_slide_contenido(prs, layout, titulo_seccion, titulo_presentacion,
-subtitulo=None, mapa_idx=None, company=""):
+                          subtitulo=None, mapa_idx=None, company=""):
     """
     Crea y configura una slide de contenido.
     mapa_idx: dict nombre_canonico -> idx del layout anotado.
@@ -373,10 +390,27 @@ subtitulo=None, mapa_idx=None, company=""):
 
 
 # ---------------------------------------------------------------------------
+# Helpers para insertar imagen en slide de contenido
+# ---------------------------------------------------------------------------
+
+def _area_cuerpo(slide_actual, mapa_idx_contenido):
+    """Devuelve (left, top, width, height) del placeholder de cuerpo o fallback."""
+    idx_cuerpo = mapa_idx_contenido.get(N_CUERPO, 15)
+    for ph in slide_actual.placeholders:
+        try:
+            if ph.placeholder_format.idx == idx_cuerpo:
+                return ph.left, ph.top, ph.width, ph.height
+        except Exception:
+            continue
+    return Inches(0.5), Inches(2), Inches(9), Inches(4)
+
+
+# ---------------------------------------------------------------------------
 # Generacion principal
 # ---------------------------------------------------------------------------
 
-def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=None, company=""):
+def generar_presentacion(elementos, ruta_plantilla, ruta_salida,
+                         primer_imagen=None, mermaid_code=None, company=""):
     """Genera la presentacion PowerPoint."""
     elementos = etiquetar_mermaid_secciones(elementos)
     prs = Presentation(ruta_plantilla)
@@ -401,7 +435,14 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
     # Mapa nombre->idx del layout de contenido, leido una sola vez
     mapa_idx_contenido = construir_mapa_idx_layout(layout_contenido)
 
-    ruta_mermaid_png = renderizar_mermaid(mermaid_code) if mermaid_code else None
+    # Imagen para la portada: preferir imagen directa, fallback a mermaid renderizado
+    ruta_portada_png   = None
+    mermaid_portada_tmp = None  # solo para limpieza si fue generado
+    if primer_imagen and os.path.exists(primer_imagen):
+        ruta_portada_png = primer_imagen
+    elif mermaid_code:
+        mermaid_portada_tmp = renderizar_mermaid(mermaid_code)
+        ruta_portada_png    = mermaid_portada_tmp
 
     titulo_presentacion   = ""
     contador_seccion      = 0
@@ -456,10 +497,10 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
                     except Exception:
                         continue
 
-            if ruta_mermaid_png and HAS_PIL:
+            if ruta_portada_png and HAS_PIL:
                 ph_img = buscar_ph(slide, N_IMAGEN, PP_PLACEHOLDER.PICTURE)
                 if ph_img:
-                    insertar_imagen_en_area(slide, ruta_mermaid_png,
+                    insertar_imagen_en_area(slide, ruta_portada_png,
                                            ph_img.left, ph_img.top, ph_img.width, ph_img.height)
                     ph_img._element.getparent().remove(ph_img._element)
 
@@ -489,22 +530,31 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
             if ph_num:
                 escribir_texto_preservando(ph_num, f"{contador_seccion:02d}")
 
-            mermaid_seccion = elemento.get("primer_mermaid")
-            if mermaid_seccion:
-                ruta_png_sec = renderizar_mermaid(mermaid_seccion)
-                if ruta_png_sec:
-                    try:
-                        ph_img = buscar_ph(slide_seccion_actual, N_IMAGEN, PP_PLACEHOLDER.PICTURE)
-                        if ph_img:
-                            ar_l, ar_t, ar_w, ar_h = ph_img.left, ph_img.top, ph_img.width, ph_img.height
-                        else:
-                            ar_l, ar_t, ar_w, ar_h = Inches(6), Inches(1), Inches(3.5), Inches(5)
-                        insertar_imagen_en_area(slide_seccion_actual, ruta_png_sec, ar_l, ar_t, ar_w, ar_h)
-                    except Exception as e:
-                        print(f"  [AVISO] Mermaid en portada seccion: {e}")
-                    finally:
-                        if os.path.exists(ruta_png_sec):
-                            os.unlink(ruta_png_sec)
+            # Imagen de seccion: preferir imagen directa, fallback a mermaid
+            ruta_sec       = None
+            mermaid_sec_tmp = None
+            img_sec = elemento.get("primer_imagen")
+            if img_sec and os.path.exists(img_sec):
+                ruta_sec = img_sec
+            else:
+                mermaid_sec = elemento.get("primer_mermaid")
+                if mermaid_sec:
+                    mermaid_sec_tmp = renderizar_mermaid(mermaid_sec)
+                    ruta_sec = mermaid_sec_tmp
+
+            if ruta_sec:
+                try:
+                    ph_img = buscar_ph(slide_seccion_actual, N_IMAGEN, PP_PLACEHOLDER.PICTURE)
+                    if ph_img:
+                        ar_l, ar_t, ar_w, ar_h = ph_img.left, ph_img.top, ph_img.width, ph_img.height
+                    else:
+                        ar_l, ar_t, ar_w, ar_h = Inches(6), Inches(1), Inches(3.5), Inches(5)
+                    insertar_imagen_en_area(slide_seccion_actual, ruta_sec, ar_l, ar_t, ar_w, ar_h)
+                except Exception as e:
+                    print(f"  [AVISO] Imagen en portada seccion: {e}")
+                finally:
+                    if mermaid_sec_tmp and os.path.exists(mermaid_sec_tmp):
+                        os.unlink(mermaid_sec_tmp)
 
             seccion_pendiente  = True
             texto_frame_actual = None
@@ -521,6 +571,21 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
                 asegurar_slide_contenido()
                 anadir_parrafo_contenido(texto_frame_actual, elemento["texto"], es_bullet=False)
 
+        # ---------------------------------------------------------------- IMAGEN
+        elif elemento["tipo"] == "imagen":
+            if texto_frame_actual is not None or seccion_pendiente:
+                asegurar_slide_contenido()
+                ruta_img = elemento["ruta"]
+                if os.path.exists(ruta_img):
+                    try:
+                        slide_actual = prs.slides[-1]
+                        ar_l, ar_t, ar_w, ar_h = _area_cuerpo(slide_actual, mapa_idx_contenido)
+                        insertar_imagen_en_area(slide_actual, ruta_img, ar_l, ar_t, ar_w, ar_h)
+                    except Exception as e:
+                        print(f"  [AVISO] Imagen en contenido: {e}")
+                else:
+                    print(f"  [AVISO] Imagen no encontrada: {ruta_img}")
+
         # ---------------------------------------------------------------- MERMAID
         elif elemento["tipo"] == "mermaid":
             if texto_frame_actual is not None or seccion_pendiente:
@@ -529,19 +594,7 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
                 if ruta_png:
                     try:
                         slide_actual = prs.slides[-1]
-                        idx_cuerpo = mapa_idx_contenido.get(N_CUERPO, 15)
-                        ph_c = None
-                        for ph in slide_actual.placeholders:
-                            try:
-                                if ph.placeholder_format.idx == idx_cuerpo:
-                                    ph_c = ph
-                                    break
-                            except Exception:
-                                continue
-                        if ph_c:
-                            ar_l, ar_t, ar_w, ar_h = ph_c.left, ph_c.top, ph_c.width, ph_c.height
-                        else:
-                            ar_l, ar_t, ar_w, ar_h = Inches(0.5), Inches(2), Inches(9), Inches(4)
+                        ar_l, ar_t, ar_w, ar_h = _area_cuerpo(slide_actual, mapa_idx_contenido)
                         insertar_imagen_en_area(slide_actual, ruta_png, ar_l, ar_t, ar_w, ar_h)
                     except Exception as e:
                         print(f"  [AVISO] Mermaid en contenido: {e}")
@@ -553,8 +606,8 @@ def generar_presentacion(elementos, ruta_plantilla, ruta_salida, mermaid_code=No
     prs.save(ruta_salida)
     print(f"  Presentacion generada correctamente: {ruta_salida}")
 
-    if ruta_mermaid_png and os.path.exists(ruta_mermaid_png):
-        os.unlink(ruta_mermaid_png)
+    if mermaid_portada_tmp and os.path.exists(mermaid_portada_tmp):
+        os.unlink(mermaid_portada_tmp)
 
 
 # ---------------------------------------------------------------------------
@@ -566,7 +619,7 @@ def main():
     parser.add_argument("entrada",   help="Archivo Markdown (.md)")
     parser.add_argument("plantilla", help="Plantilla PowerPoint (.pptx)")
     parser.add_argument("salida",    help="Archivo de salida (.pptx)")
-    parser.add_argument("--company", default="", help="Nombre de empresa para el pie (vacio = solo titulo)")
+    parser.add_argument("--company", default="", help="Nombre de empresa para el pie")
     parser.add_argument("--debug",   action="store_true",
                         help="Muestra layouts y placeholders de la plantilla")
     args = parser.parse_args()
@@ -589,13 +642,15 @@ def main():
             print()
         return
 
-    elementos, primer_mermaid = parsear_markdown(args.entrada)
+    elementos, primer_imagen, primer_mermaid = parsear_markdown(args.entrada)
     if not elementos:
         print("  El archivo Markdown esta vacio o no contiene elementos reconocidos.")
         return
 
     try:
-        generar_presentacion(elementos, args.plantilla, args.salida, primer_mermaid,
+        generar_presentacion(elementos, args.plantilla, args.salida,
+                             primer_imagen=primer_imagen,
+                             mermaid_code=primer_mermaid,
                              company=args.company)
     except Exception as e:
         print(f"  Error: {e}")

@@ -22,16 +22,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
-    <Content Include="documentos\ejemplos\ejemplo_entrada.md" />
-    <Content Include="documentos\ejemplos\plantilla.pptx" />
-    <Content Include="documentos\ejemplos\Título de la presentación de ejemplo.pptx" />
-    <Content Include="documentos\FLOAN_Presentacion.md" />
-    <Content Include="documentos\plantilla.pptx" />
-    <Content Include="documentos\Servicio FLOAN.pptx" />
+    <Content Include="docs\ejemplo_entrada.md" />
+    <Content Include="docs\ejemplo_plantilla.pptx" />
+    <Content Include="docs\img\image.png" />
     <Content Include="GetTitle.ps1" />
     <Content Include="Md2PPT.bat" />
-    <Content Include="PROMPT GENERACION MD PRESENTACION.txt" />
+    <Content Include="PROMPT GENERACION MD PRESENTACION.md" />
     <Content Include="README.md" />
     <Content Include="requirements.txt" />
     <Content Include="Settings.json" />
@@ -42,8 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".vs\" />
-    <Folder Include="documentos\" />
-    <Folder Include="documentos\ejemplos\" />
+    <Folder Include="docs\" />
+    <Folder Include="docs\img\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -51,7 +51,9 @@ G:\Victor\Md2PPT\
 ├── PROMPT GENERACION MD PRESENTACION.md                ← Ejemplo con todas las opciones de sintaxis
 └── docs\
     ├── ejemplo_entrada.md                              ← Ejemplo de Markdown de entrada
-    └── ejemplo_plantilla.pptx                          ← Ejemplo de plantilla
+    ├── ejemplo_plantilla.pptx                          ← Ejemplo de plantilla
+    └── img\
+        └── image.png                                   ← Ejemplo de imagen usada en el Markdown
 ```
 
 ### Configuración (`Settings.json`)
@@ -84,18 +86,19 @@ python Md2PPT.py <entrada.md> <plantilla.pptx> <salida.pptx>
 
 ## Formato del Markdown de entrada
 
-Se puede usar el fichero de "PROMPT GENERACION MD PRESENTACION.md" en la raíz del proyecto para que una IA genere un md con la referencia de sintaxis correcta. Ver también `ejemplo_entrada.md` de docs\ejemplos.
+Se puede usar el fichero `PROMPT GENERACION MD PRESENTACION.md` en la raíz del proyecto para que una IA genere un MD con la referencia de sintaxis correcta. Ver también `docs\ejemplo_entrada.md`.
 
 ### Referencia de sintaxis
 
 | Sintaxis Markdown | Resultado en PowerPoint |
 |---|---|
-| `# Título` | **Portada** (layout 0): título, fecha mes/año y diagrama Mermaid opcional |
+| `# Título` | **Portada** (layout 0): título, fecha mes/año e imagen/diagrama opcional |
 | `## Sección` | **Portada de sección** (layout 1): título en mayúsculas + número "01", "02"… y una slide de contenido vacía |
 | `### Subtítulo` | En la **portada de sección**: se acumula como subtítulo. En el **contenido**: crea una nueva slide de contenido con ese texto como subtítulo |
 | Texto normal | Párrafo sin viñeta en la slide de contenido actual |
 | `* texto` o `- texto` | Viñeta (bullet point) en la slide de contenido actual |
-| ` ```mermaid … ``` ` | Primer bloque → imagen en la portada. Bloques siguientes → imagen en la slide de contenido actual |
+| `![alt](ruta)` | Imagen en la slide de contenido actual. La primera imagen del documento se usa en la **portada**; la primera imagen de cada sección en la **portada de sección** |
+| ` ```mermaid … ``` ` | Diagrama renderizado como imagen. Se usa en portada/sección si no hay imagen directa (fallback). En slides de contenido se inserta igual que una imagen |
 | `**texto**` o `__texto__` | **Negrita** |
 | `*texto*` o `_texto_` | *Cursiva* |
 | `~~texto~~` | ~~Tachado~~ |
@@ -103,10 +106,18 @@ Se puede usar el fichero de "PROMPT GENERACION MD PRESENTACION.md" en la raíz d
 
 ### Reglas de flujo
 
-- Todo el contenido (texto, bullets, diagramas) va a la **slide de contenido activa**.
+- Todo el contenido (texto, bullets, imágenes, diagramas) va a la **slide de contenido activa**.
 - Cada `## Sección` crea una portada de sección **y** una slide de contenido inicial.
 - Cada `### Subtítulo` crea una **nueva slide de contenido** con ese subtítulo. Si aparece antes del primer contenido de una sección, también se añade a la portada de sección.
 - Los bullets y textos van siempre a la slide de contenido activa en ese momento, **en el orden del Markdown**.
+
+### Prioridad imagen vs. diagrama Mermaid
+
+| Ubicación | Primera opción | Fallback |
+|-----------|---------------|----------|
+| Portada (`# H1`) | Primera `![imagen]` del documento | Primer bloque ` ```mermaid ``` ` del documento |
+| Portada de sección (`## Sección`) | Primera `![imagen]` de la sección | Primer bloque ` ```mermaid ``` ` de la sección |
+| Slide de contenido | Se inserta en el orden en que aparece | — |
 
 ---
 
@@ -123,7 +134,7 @@ Además, dentro de cada layout los placeholders se identifican por un número de
 1. Abre la plantilla en PowerPoint.
 2. Elimina todas las diapositivas **excepto las 4 que necesitas**, en este orden:
    - Slide 1 → Portada
-   - Slide 2 → Portada de sección (separata)
+   - Slide 2 → Portada de sección
    - Slide 3 → Contenido con texto
    - Slide 4 → Cierre
 3. Guarda la plantilla.
@@ -144,16 +155,16 @@ El script realiza dos tareas:
 La salida muestra el orden resultante y las anotaciones realizadas:
 
 ```
-Layout 0: 'PORTADA - V - Pruno'
-Layout 1: 'SEPARATA - Principal'
-Layout 2: 'CONTENIDO - Texto - Ceramico'
+Layout 0: 'PORTADA'
+Layout 1: 'SECCION'
+Layout 2: 'CONTENIDO'
   idx=0  -> MD2PPT_TITLE
   idx=14 -> MD2PPT_SUBTITLE
   idx=15 -> MD2PPT_BODY
   idx=16 -> MD2PPT_ANTETITLE
   idx=17 -> MD2PPT_FOOTER
   idx=18 -> MD2PPT_SLIDE_NUMBER
-Layout 3: 'CIERRE - Pruno'
+Layout 3: 'CIERRE'
 ```
 
 ### Paso 3 — Usar la plantilla limpia
@@ -178,8 +189,8 @@ Muestra todos los layouts disponibles y los placeholders de cada slide existente
 
 | Índice | Uso | Placeholders clave |
 |--------|-----|--------------------|
-| 0 | Portada | `MD2PPT_TITLE` título, `MD2PPT_SUBTITLE` subtítulo, `MD2PPT_DATE` fecha, `MD2PPT_PICTURE` imagen Mermaid |
-| 1 | Portada de sección | `MD2PPT_TITLE` título (mayúsculas), `MD2PPT_SUBTITLE` subtítulos H3, número de sección (`idx 10`) |
+| 0 | Portada | `MD2PPT_TITLE` título, `MD2PPT_SUBTITLE` subtítulo, `MD2PPT_DATE` fecha, `MD2PPT_PICTURE` imagen (directa o Mermaid) |
+| 1 | Portada de sección | `MD2PPT_TITLE` título (mayúsculas), `MD2PPT_SUBTITLE` subtítulos H3, número de sección (`idx 10`), `MD2PPT_PICTURE` imagen (directa o Mermaid) |
 | 2 | Contenido | `MD2PPT_TITLE` título sección, `MD2PPT_SUBTITLE` subtítulo H3, `MD2PPT_BODY` cuerpo, `MD2PPT_FOOTER` pie, `MD2PPT_SLIDE_NUMBER` nº página |
 | 3 | Cierre | Sin modificar |
 

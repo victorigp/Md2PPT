@@ -4,12 +4,13 @@ Quiero que me generes un markdown de presentación partiendo del Floan_Documenta
 
 | Sintaxis Markdown | Resultado en PowerPoint |
 |---|---|
-| `# Título` | **Portada** (layout 0): título, fecha mes/año y diagrama Mermaid opcional |
+| `# Título` | **Portada** (layout 0): título, fecha mes/año e imagen/diagrama opcional |
 | `## Sección` | **Portada de sección** (layout 1): título en mayúsculas + número "01", "02"… y una slide de contenido vacía |
 | `### Subtítulo` | En la **portada de sección**: se acumula como subtítulo. En el **contenido**: crea una nueva slide de contenido con ese texto como subtítulo |
 | Texto normal | Párrafo sin viñeta en la slide de contenido actual |
 | `* texto` o `- texto` | Viñeta (bullet point) en la slide de contenido actual |
-| ` ```mermaid … ``` ` | Primer bloque → imagen en la portada. Bloques siguientes → imagen en la slide de contenido actual |
+| `![alt](ruta)` | Imagen en la slide de contenido actual. La primera imagen del documento se usa en la **portada**; la primera imagen de cada sección en la **portada de sección** |
+| ` ```mermaid … ``` ` | Diagrama renderizado como imagen. Se usa en portada/sección si no hay imagen directa (fallback). En slides de contenido se inserta igual que una imagen |
 | `**texto**` o `__texto__` | **Negrita** |
 | `*texto*` o `_texto_` | *Cursiva* |
 | `~~texto~~` | ~~Tachado~~ |
@@ -17,10 +18,11 @@ Quiero que me generes un markdown de presentación partiendo del Floan_Documenta
 
 ### Reglas de flujo
 
-- Todo el contenido (texto, bullets, diagramas) va a la **slide de contenido activa**.
+- Todo el contenido (texto, bullets, imágenes, diagramas) va a la **slide de contenido activa**.
 - Cada `## Sección` crea una portada de sección **y** una slide de contenido inicial.
 - Cada `### Subtítulo` crea una **nueva slide de contenido** con ese subtítulo. Si aparece antes del primer contenido de una sección, también se añade a la portada de sección.
 - Los bullets y textos van siempre a la slide de contenido activa en ese momento, **en el orden del Markdown**.
+
 
 
 A continuación te pongo un markdown de ejemplo:
@@ -29,15 +31,7 @@ A continuación te pongo un markdown de ejemplo:
 
 # Título de la presentación de ejemplo
 
-Este es el primer bloque mermaid y aparecerá como imagen en la portada:
-
-```mermaid
-graph LR
-    A["Ejemplo 1"] -->|"Ejemplo 2"| B["Ejemplo 3"]
-    B -->|"Ejemplo 4"| C["Ejemplo 5"]
-    C -->|"Ejemplo 6"| B
-    B -->|"Ejemplo 7"| A
-```
+![Texto alternativo](img/image.png "Image")
 
 ## Primera sección
 ### Introducción a la sección
