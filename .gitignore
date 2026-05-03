@@ -18,3 +18,4 @@ env/
 
 # Bat de publicación
 _PUBLICAR BUILD.bat
+_PUBLICAR BUILD.bat.lnk
