@@ -1,4 +1,15 @@
-Quiero que me generes un markdown de presentación partiendo del Floan_Documentacion.md porque lo voy a usar para generar un pptx. Ese markdown de presentación tiene que cumplir:
+Actúa como un experto en comunicación corporativa y diseño de presentaciones.
+Tu objetivo es resumir y transformar el texto que te proporcionaré en una estructura Markdown optimizada para ser convertida directamente en una presentación de PowerPoint.
+Quiero que me generes un markdown que sea apto para una presentación en PowerPoint, así que tiene que estar resumido de manera concisa y con puntos claves para que sirvan para una presentación. 
+
+Este sería el texto de partida:
+
+---
+INTRODUCIR TEXTO O REFERENCIA A FICHERO AQUÍ 
+---
+******
+
+El markdown de presentación que generes tiene que cumplir:
 
 ### Referencia de sintaxis
 
@@ -22,6 +33,7 @@ Quiero que me generes un markdown de presentación partiendo del Floan_Documenta
 - Cada `## Sección` crea una portada de sección **y** una slide de contenido inicial.
 - Cada `### Subtítulo` crea una **nueva slide de contenido** con ese subtítulo. Si aparece antes del primer contenido de una sección, también se añade a la portada de sección.
 - Los bullets y textos van siempre a la slide de contenido activa en ese momento, **en el orden del Markdown**.
+- Límite de contenido: Bajo ningún concepto pongas más de 5 viñetas (* o -) por cada slide de contenido.
 
 
 
