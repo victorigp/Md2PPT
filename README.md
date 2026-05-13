@@ -48,7 +48,7 @@ G:\Victor\Md2PPT\
 ├── Settings.json                                       ← Configuración general (empresa, Python, etc.)
 ├── requirements.txt                                    ← Dependencias Python
 ├── README.md                                           ← Esta guía
-├── PROMPT GENERACION MD PRESENTACION.md                ← Ejemplo con todas las opciones de sintaxis
+├── PROMPT GENERACION MD ENTRADA.md                     ← Ejemplo con todas las opciones de sintaxis
 └── docs\
     ├── ejemplo_entrada.md                              ← Ejemplo de Markdown de entrada
     ├── ejemplo_plantilla.pptx                          ← Ejemplo de plantilla
@@ -86,7 +86,7 @@ python Md2PPT.py <entrada.md> <plantilla.pptx> <salida.pptx>
 
 ## Formato del Markdown de entrada
 
-Se puede usar el fichero `PROMPT GENERACION MD PRESENTACION.md` en la raíz del proyecto para que una IA genere un MD con la referencia de sintaxis correcta. Ver también `docs\ejemplo_entrada.md`.
+Se puede usar el fichero `PROMPT GENERACION MD ENTRADA.md` en la raíz del proyecto para que una IA genere un MD con la referencia de sintaxis correcta. Ver también `docs\ejemplo_entrada.md`.
 
 ### Referencia de sintaxis
 
