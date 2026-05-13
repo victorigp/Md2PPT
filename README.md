@@ -48,7 +48,7 @@ G:\Victor\Md2PPT\
 ├── Settings.json                                       ← Configuración general (empresa, Python, etc.)
 ├── requirements.txt                                    ← Dependencias Python
 ├── README.md                                           ← Esta guía
-├── PROMPT GENERACION MD ENTRADA.md                     ← Ejemplo con todas las opciones de sintaxis
+├── PROMPT GENERACION MD ENTRADA.md                     ← Ejemplo de prompt para generar el Markdown de entrada con IA
 └── docs\
     ├── ejemplo_entrada.md                              ← Ejemplo de Markdown de entrada
     ├── ejemplo_plantilla.pptx                          ← Ejemplo de plantilla
